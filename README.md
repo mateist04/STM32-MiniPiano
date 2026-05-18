@@ -44,37 +44,37 @@ It reads 8 hardware-debounced pushbuttons using External Interrupts (EXTI), synt
 
 ```mermaid
 graph TD
-    %% Sectiunea de Hardware / Intreruperi
-    subgraph EXTI [Modulul Keys - Hardware Interrupts]
-        A((Apăsare/Eliberare<br>Buton PC0-PC7)) --> B[EXTI IRQ Handler]
-        B --> C{Trecut > 50ms?<br>Software Debounce}
-        C -- Nu --> D[Ignoră bounce-ul]
-        C -- Da --> E{Stare Pin?}
-        E -- LOW Pressed --> F[key_flag = 1<br>Salvează active_key]
+    %% Hardware / Interrupts Section
+    subgraph EXTI [Keys Module - Hardware Interrupts]
+        A((Press/Release<br>Button PC0-PC7)) --> B[EXTI IRQ Handler]
+        B --> C{Passed > 50ms?<br>Software Debounce}
+        C -- No --> D[Ignore bounce]
+        C -- Yes --> E{Pin State?}
+        E -- LOW Pressed --> F[key_flag = 1<br>Save active_key]
         E -- HIGH Released --> G[key_flag = 2]
     end
 
-    %% Buclei Infinite
+    %% Infinite Loop Section
     subgraph MAIN [Main Loop - State Machine]
         H((Polling)) --> I{Keys_EventPending?}
         F --> I
         G --> I
-        I -- 1 Note ON --> J[Salvează currently_playing_key<br>Printează UART]
-        J --> K[Apelează Audio_PlayNote]
+        I -- 1 Note ON --> J[Save currently_playing_key<br>Print to UART]
+        J --> K[Call Audio_PlayNote]
         
-        I -- 2 Note OFF --> L{Tasta eliberată ==<br>Tasta care cântă?}
-        L -- Da --> M[Printează UART<br>Apelează Audio_Stop]
-        L -- Nu --> N[Ignoră eliberarea<br>Last Note Priority]
+        I -- 2 Note OFF --> L{Released key ==<br>Playing key?}
+        L -- Yes --> M[Print to UART<br>Call Audio_Stop]
+        L -- No --> N[Ignore release<br>Last Note Priority]
     end
 
-    %% Sectiunea Audio / Timere
-    subgraph AUDIO [Modulul Audio - TIM2 PWM]
-        K --> O[Setează TIM2 ARR<br>Frecvența Notei]
-        O --> P[Setează TIM2 CCR1<br>Duty Cycle 50%]
+    %% Audio / Timers Section
+    subgraph AUDIO [Audio Module - TIM2 PWM]
+        K --> O[Set TIM2 ARR<br>Note Frequency]
+        O --> P[Set TIM2 CCR1<br>Duty Cycle 50%]
         
-        M --> Q[Setează TIM2 CCR1<br>Duty Cycle 0%]
+        M --> Q[Set TIM2 CCR1<br>Duty Cycle 0%]
         
-        P --> R((Semnal PWM pe PA5))
+        P --> R((PWM Signal on PA5))
         Q --> R
     end
 ```
