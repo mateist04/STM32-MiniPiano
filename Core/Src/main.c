@@ -25,7 +25,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+// Definim durata fixă a notei (ex: 500 milisecunde)
+#define T_NOTA 500
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -101,31 +102,31 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint8_t currently_playing_key = 255;
+
+  uint32_t note_start_time = 0;
+  uint8_t is_playing = 0;
 
   while (1)
   {
+    /* USER CODE BEGIN 3 */
+      uint8_t event = Keys_EventPending();
+      if(event == 1){
+          uint8_t triggered_key = Keys_GetPressed();
 
-    /* USER CODE END WHILE */
-	  uint8_t event = Keys_EventPending();
+          printf("Note ON: Key %d\r\n", triggered_key);
+          Audio_PlayNote(triggered_key);
+          note_start_time = HAL_GetTick();
+          is_playing = 1;
 
-	  if(event != 0){
-		  uint8_t triggered_key = Keys_GetPressed();
-
-		  if(event == 1){
-			  printf("Note ON: Key %d\r\n", triggered_key);
-			  Audio_PlayNote(triggered_key);
-			  currently_playing_key = triggered_key;
-		  }else if(event == 2){
-			  printf("Note OFF: Key %d\r\n", triggered_key);
-
-			  if(triggered_key == currently_playing_key){
-				  Audio_Stop();
-				  currently_playing_key = 255;
-			  }
-		  }
-		  Keys_ClearEvent();
-	  }
+          Keys_ClearEvent();
+      }
+      if (is_playing == 1) {
+          if ((HAL_GetTick() - note_start_time) >= T_NOTA) {
+              Audio_Stop();
+              is_playing = 0;
+              printf("Note OFF: Timpul a expirat.\r\n");
+          }
+      }
   }
   /* USER CODE END 3 */
 }
@@ -200,7 +201,7 @@ void Error_Handler(void)
 #ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
+  * where the assert_param error has occurred.
   * @param  file: pointer to the source file name
   * @param  line: assert_param error line source number
   * @retval None

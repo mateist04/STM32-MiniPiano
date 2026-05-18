@@ -19,7 +19,7 @@ void Keys_Init(void){
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 
 	GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7;
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
@@ -99,12 +99,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 		active_key = 7;
 	}
 
-	// Read the physical pin to see if it's currently pressed or released
-	if (HAL_GPIO_ReadPin(GPIOC, GPIO_Pin) == GPIO_PIN_RESET) {
-		key_flag = 1; // 1 = Note ON (Pressed)
-	} else {
-		key_flag = 2; // 2 = Note OFF (Released)
-	}
+	key_flag = 1;
 }
 
 
