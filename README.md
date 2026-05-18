@@ -40,7 +40,7 @@ It reads 8 hardware-debounced pushbuttons using External Interrupts (EXTI), synt
 4. Press the black **Reset (B2)** button on the Nucleo board. You should see the boot message: `System Booted! Piano Ready.`
 5. Press the breadboard buttons. You will hear the synthesized notes through the speaker and see real-time `Note ON` and `Note OFF` events logged in your terminal.
 
-## 🧠 Software Architecture
+## Software Architecture
 
 ```mermaid
 graph TD
@@ -77,6 +77,6 @@ graph TD
         P --> R((Semnal PWM pe PA5))
         Q --> R
     end
-
+```
 ---
 *Developed as an embedded systems engineering project.*
