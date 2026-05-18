@@ -40,5 +40,43 @@ It reads 8 hardware-debounced pushbuttons using External Interrupts (EXTI), synt
 4. Press the black **Reset (B2)** button on the Nucleo board. You should see the boot message: `System Booted! Piano Ready.`
 5. Press the breadboard buttons. You will hear the synthesized notes through the speaker and see real-time `Note ON` and `Note OFF` events logged in your terminal.
 
+## 🧠 Software Architecture
+
+```mermaid
+graph TD
+    %% Sectiunea de Hardware / Intreruperi
+    subgraph EXTI [Modulul Keys - Hardware Interrupts]
+        A((Apăsare/Eliberare<br>Buton PC0-PC7)) --> B[EXTI IRQ Handler]
+        B --> C{Trecut > 50ms?<br>Software Debounce}
+        C -- Nu --> D[Ignoră bounce-ul]
+        C -- Da --> E{Stare Pin?}
+        E -- LOW Pressed --> F[key_flag = 1<br>Salvează active_key]
+        E -- HIGH Released --> G[key_flag = 2]
+    end
+
+    %% Buclei Infinite
+    subgraph MAIN [Main Loop - State Machine]
+        H((Polling)) --> I{Keys_EventPending?}
+        F --> I
+        G --> I
+        I -- 1 Note ON --> J[Salvează currently_playing_key<br>Printează UART]
+        J --> K[Apelează Audio_PlayNote]
+        
+        I -- 2 Note OFF --> L{Tasta eliberată ==<br>Tasta care cântă?}
+        L -- Da --> M[Printează UART<br>Apelează Audio_Stop]
+        L -- Nu --> N[Ignoră eliberarea<br>Last Note Priority]
+    end
+
+    %% Sectiunea Audio / Timere
+    subgraph AUDIO [Modulul Audio - TIM2 PWM]
+        K --> O[Setează TIM2 ARR<br>Frecvența Notei]
+        O --> P[Setează TIM2 CCR1<br>Duty Cycle 50%]
+        
+        M --> Q[Setează TIM2 CCR1<br>Duty Cycle 0%]
+        
+        P --> R((Semnal PWM pe PA5))
+        Q --> R
+    end
+
 ---
 *Developed as an embedded systems engineering project.*
